@@ -126,9 +126,9 @@ pipeline {
                             toolName: 'docker'
                         ) {
 
-                            sh 'docker tag netflix avian19/netflix:latest'
+                            sh 'docker tag netflix thisismuhammadessa/netflix:latest'
 
-                            sh 'docker push avian19/netflix:latest'
+                            sh 'docker push thisismuhammadessa/netflix:latest'
                         }
                     }
                 }
@@ -137,7 +137,7 @@ pipeline {
 
         stage('TRIVY Image Scan') {
             steps {
-                sh 'trivy image avian19/netflix:latest > trivyimage.txt'
+                sh 'trivy image thisismuhammadessa/netflix:latest > trivyimage.txt'
             }
         }
 
