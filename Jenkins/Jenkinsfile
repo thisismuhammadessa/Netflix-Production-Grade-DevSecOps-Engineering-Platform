@@ -46,7 +46,7 @@ pipeline {
                             -Dsonar.language=ts \
                             -Dsonar.exclusions=dist/**,node_modules/**,public/** \
                             -Dsonar.host.url=$SONAR_HOST_URL \
-                            -Dsonar.login=$SONAR_AUTH_TOKEN
+                            -Dsonar.token=$SONAR_AUTH_TOKEN
                         '''
                     }
                 }
@@ -55,11 +55,13 @@ pipeline {
 
         stage('Quality Gate') {
             steps {
-                script {
-                    waitForQualityGate(
-                        abortPipeline: false,
-                        credentialsId: 'sonar-token'
-                    )
+                timeout(time: 10, unit: 'MINUTES') {
+                    script {
+                        waitForQualityGate(
+                            abortPipeline: false,
+                            credentialsId: 'sonar-token'
+                        )
+                    }
                 }
             }
         }
@@ -67,12 +69,26 @@ pipeline {
         stage('OWASP Dependency Check') {
             steps {
                 dir('Application-Code') {
+
                     echo "🔒 Running OWASP Dependency Check..."
 
-                    dependencyCheck(
-                        additionalArguments: '--scan ./ --format XML --out .',
-                        odcInstallation: 'owasp-dp-check'
-                    )
+                    withCredentials([
+                        string(
+                            credentialsId: 'nvd-api-key',
+                            variable: 'NVD_API_KEY'
+                        )
+                    ]) {
+
+                        dependencyCheck(
+                            additionalArguments: """
+                                --scan ./
+                                --format XML
+                                --out .
+                                --nvdApiKey ${NVD_API_KEY}
+                            """,
+                            odcInstallation: 'owasp-dp-check'
+                        )
+                    }
 
                     dependencyCheckPublisher(
                         pattern: '**/dependency-check-report.xml'
@@ -93,6 +109,7 @@ pipeline {
             steps {
                 dir('Application-Code') {
                     script {
+
                         withDockerRegistry(
                             credentialsId: 'docker',
                             toolName: 'docker'
@@ -105,11 +122,11 @@ pipeline {
                                 )
                             ]) {
 
-                                sh """
+                                sh '''
                                     docker build \
-                                    --build-arg TMDB_V3_API_KEY=${TMDB_API_KEY} \
+                                    --build-arg TMDB_V3_API_KEY="$TMDB_API_KEY" \
                                     -t netflix .
-                                """
+                                '''
                             }
                         }
                     }
@@ -121,6 +138,7 @@ pipeline {
             steps {
                 dir('Application-Code') {
                     script {
+
                         withDockerRegistry(
                             credentialsId: 'docker',
                             toolName: 'docker'
@@ -144,7 +162,9 @@ pipeline {
         stage('Deploy to Kubernetes') {
             steps {
                 script {
+
                     dir('Kubernetes') {
+
                         withKubeConfig(credentialsId: 'k8s') {
 
                             sh 'kubectl apply -f deployment.yml'
@@ -162,6 +182,7 @@ pipeline {
     }
 
     post {
+
         always {
             script {
 
