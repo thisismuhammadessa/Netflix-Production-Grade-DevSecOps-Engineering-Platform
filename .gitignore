@@ -1,2 +1,13 @@
-.terraform*
-terraform.lock.hcl
+sudo -u jenkins bash -c 'cat > .gitignore <<EOF
+node_modules/
+.scannerwork/
+dist/
+.env
+.env.*
+*.pem
+*.key
+terraform.tfstate
+terraform.tfstate.*
+.terraform/
+.terraform.lock.hcl
+EOF'
