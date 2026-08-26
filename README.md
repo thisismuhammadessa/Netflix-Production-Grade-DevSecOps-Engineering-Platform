@@ -9,7 +9,7 @@ Built to demonstrate **real-world DevSecOps workflows** for CI/CD, cloud automat
 
 ---
 
-## 🚀 Project Overview
+## Project Overview
 
 This project simulates a real enterprise-grade setup where a **React-based Netflix Clone** is deployed and managed through a **secure, automated DevOps pipeline**.
 
@@ -99,4 +99,4 @@ DevOps & Cloud Engineer
 ## Contributing
 We welcome contributions! If you have ideas for enhancements or find any issues, please open a pull request or file an issue.
 
-Happy Coding! 🚀
+Happy Coding! 
